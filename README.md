@@ -63,6 +63,10 @@ Production build:
 cargo tauri build
 ```
 
+Build outputs:
+- `.app`: `src-tauri/target/release/bundle/macos/`
+- `.dmg`: `src-tauri/target/release/bundle/dmg/`
+
 ## Permissions (macOS)
 
 For full functionality, OpenSpeak needs:
@@ -96,6 +100,38 @@ Default hotkey:
 - The app runs tray-first by default; open settings from the tray menu.
 - Closing the settings window hides it instead of quitting.
 - The overlay is a separate transparent always-on-top window.
+
+## GitHub Releases
+
+This repository includes a GitHub Actions release workflow:
+
+- File: `.github/workflows/release.yml`
+- Trigger: push a semantic version tag (`v*.*.*`)
+- Runner: `macos-latest`
+- Artifacts uploaded to GitHub Releases via `tauri-action`
+
+### Create a release
+
+1. Bump versions if needed (`package.json`, `src-tauri/Cargo.toml`, `src-tauri/tauri.conf.json`).
+2. Commit to `main`.
+3. Create and push a tag:
+   - `git tag v0.1.1`
+   - `git push origin v0.1.1`
+4. Wait for the `Release` workflow to complete.
+5. Verify assets in the GitHub Releases tab.
+
+### Optional: signing and notarization (recommended)
+
+The workflow supports macOS signing/notarization if these repository secrets are set:
+
+- `APPLE_SIGNING_IDENTITY`
+- `APPLE_CERTIFICATE` (base64-encoded `.p12`)
+- `APPLE_CERTIFICATE_PASSWORD`
+- `APPLE_ID`
+- `APPLE_PASSWORD` (app-specific password)
+- `APPLE_TEAM_ID`
+
+If these secrets are not set, builds can still complete, but distribution UX is typically better with signed/notarized artifacts.
 
 ## License
 
