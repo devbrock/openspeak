@@ -22,8 +22,15 @@ pub fn deliver_text(text: &str, paste_mode: &str) -> Result<String> {
     if paste_mode == "auto-paste" {
         #[cfg(target_os = "macos")]
         {
-            macos::trigger_cmd_v_paste()?;
-            return Ok("auto-paste".to_string());
+            match macos::trigger_cmd_v_paste() {
+                Ok(()) => return Ok("auto-paste".to_string()),
+                Err(err) => {
+                    eprintln!(
+                        "auto-paste failed (falling back to clipboard): {err:#}. \
+Grant Accessibility and Automation permissions if you want keystroke paste."
+                    );
+                }
+            }
         }
     }
 
