@@ -18,8 +18,8 @@ struct PersistedConfig {
 
 pub fn default_config() -> AppConfig {
     AppConfig {
-    hotkey: "CommandOrControl+Shift+Space".to_string(),
-        model_default: "tiny".to_string(),
+        hotkey: "CommandOrControl+Shift+Space".to_string(),
+        model_default: "small".to_string(),
         command_mode: "basic".to_string(),
         paste_mode: "clipboard".to_string(),
         language: "en".to_string(),

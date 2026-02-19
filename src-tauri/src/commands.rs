@@ -9,7 +9,7 @@ use crate::{
     command_parser::apply_basic_commands,
     config::save_config,
     injector::deliver_text,
-    model::{download_model as download_model_file, is_model_installed},
+    model::{download_model as download_model_file, is_model_installed, is_supported_model},
     overlay::set_overlay_visible,
     transcription::transcribe_locally,
     types::{AppConfig, AppStatus, RecordingState, TranscriptionResult},
@@ -67,7 +67,7 @@ pub fn set_hotkey(
 
 #[tauri::command]
 pub fn set_model(state: State<'_, AppState>, model_id: String) -> Result<(), String> {
-    if !matches!(model_id.as_str(), "tiny" | "base" | "large") {
+    if !is_supported_model(&model_id) {
         return Err("invalid model id".to_string());
     }
     state.with_lock(|s| {

@@ -19,7 +19,13 @@ It is designed for fast global dictation workflows:
 - Basic spoken formatting commands:
   - `comma`, `period`, `question mark`
   - `new line`, `new paragraph`
-- Model download and local model management (`tiny`, `base`, `large`)
+- Model download and local model management:
+  - Tiny (75 MB, fastest)
+  - Base (142 MB)
+  - Small (466 MB, recommended default)
+  - Medium (1.5 GB)
+  - Large-v3 (3.1 GB, highest accuracy)
+  - Turbo (fast large model)
 
 ## Architecture
 

@@ -6,6 +6,13 @@ use tokio::io::AsyncWriteExt;
 const APP_DATA_DIR: &str = "openspeak";
 const LEGACY_APP_DATA_DIR: &str = "brocks-dictation-tool";
 
+pub fn is_supported_model(model_id: &str) -> bool {
+    matches!(
+        model_id,
+        "tiny" | "base" | "small" | "medium" | "large-v3" | "turbo"
+    )
+}
+
 fn model_root() -> Result<PathBuf> {
     let mut dir = dirs::data_local_dir().context("failed to locate local data directory")?;
     let mut legacy = dir.clone();
@@ -27,24 +34,36 @@ fn model_filename(model_id: &str) -> Option<&'static str> {
     match model_id {
         "tiny" => Some("ggml-tiny.en.bin"),
         "base" => Some("ggml-base.en.bin"),
-        "large" => Some("ggml-large-v3.bin"),
+        "small" => Some("ggml-small.bin"),
+        "medium" => Some("ggml-medium.bin"),
+        "large-v3" => Some("ggml-large-v3.bin"),
+        "turbo" => Some("ggml-large-v3-turbo.bin"),
         _ => None,
     }
 }
 
 fn model_url(model_id: &str) -> Option<&'static str> {
     match model_id {
-    "tiny" => Some(
-      "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-tiny.en.bin?download=true",
-    ),
-    "base" => Some(
-      "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-base.en.bin?download=true",
-    ),
-    "large" => Some(
-      "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-large-v3.bin?download=true",
-    ),
-    _ => None,
-  }
+        "tiny" => Some(
+            "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-tiny.en.bin?download=true",
+        ),
+        "base" => Some(
+            "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-base.en.bin?download=true",
+        ),
+        "small" => Some(
+            "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-small.bin?download=true",
+        ),
+        "medium" => Some(
+            "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-medium.bin?download=true",
+        ),
+        "large-v3" => Some(
+            "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-large-v3.bin?download=true",
+        ),
+        "turbo" => Some(
+            "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-large-v3-turbo.bin?download=true",
+        ),
+        _ => None,
+    }
 }
 
 pub fn model_path(model_id: &str) -> Result<PathBuf> {

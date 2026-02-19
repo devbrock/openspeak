@@ -25,7 +25,9 @@ export async function getConfig(): Promise<AppConfig> {
   return invoke<AppConfig>('get_config');
 }
 
-export async function setModel(modelId: 'tiny' | 'base' | 'large'): Promise<void> {
+export async function setModel(
+  modelId: 'tiny' | 'base' | 'small' | 'medium' | 'large-v3' | 'turbo'
+): Promise<void> {
   return invoke('set_model', { modelId });
 }
 
@@ -33,6 +35,8 @@ export async function setPasteMode(pasteMode: 'clipboard' | 'auto-paste'): Promi
   return invoke('set_paste_mode', { pasteMode });
 }
 
-export async function downloadModel(modelId: 'tiny' | 'base' | 'large'): Promise<string> {
+export async function downloadModel(
+  modelId: 'tiny' | 'base' | 'small' | 'medium' | 'large-v3' | 'turbo'
+): Promise<string> {
   return invoke<string>('download_model', { modelId });
 }

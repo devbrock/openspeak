@@ -19,7 +19,7 @@ export interface TranscriptionResult {
 
 export interface AppConfig {
   hotkey: string;
-  modelDefault: 'tiny' | 'base' | 'large';
+  modelDefault: 'tiny' | 'base' | 'small' | 'medium' | 'large-v3' | 'turbo';
   commandMode: 'basic';
   pasteMode: 'clipboard' | 'auto-paste';
   language: 'en';

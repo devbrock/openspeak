@@ -18,7 +18,14 @@ const EMPTY_STATUS: AppStatus = {
   lastError: null
 };
 
-const MODEL_OPTIONS = ['tiny', 'base', 'large'] as const;
+const MODEL_OPTIONS = [
+  { id: 'tiny', label: 'Tiny', detail: '75 MB, fastest' },
+  { id: 'base', label: 'Base', detail: '142 MB' },
+  { id: 'small', label: 'Small (Recommended)', detail: '466 MB' },
+  { id: 'medium', label: 'Medium', detail: '1.5 GB' },
+  { id: 'large-v3', label: 'Large-v3', detail: '3.1 GB, highest accuracy' },
+  { id: 'turbo', label: 'Turbo', detail: 'Fast large model' }
+] as const;
 const PASTE_OPTIONS = ['clipboard', 'auto-paste'] as const;
 
 export function App() {
@@ -95,7 +102,7 @@ export function App() {
   }, [refresh]);
 
   const onChangeModel = useCallback(
-    async (model: (typeof MODEL_OPTIONS)[number]) => {
+    async (model: AppConfig['modelDefault']) => {
       setError(null);
       setBusy(true);
       try {
@@ -161,75 +168,102 @@ export function App() {
 
   return (
     <main className="app-shell">
-      <section className="card">
-        <h1>OpenSpeak</h1>
-        <p className="subhead">Local-first desktop dictation powered by whisper.cpp</p>
+      <div className="bg-orb bg-orb-left" />
+      <div className="bg-orb bg-orb-right" />
+
+      <section className="card settings-panel">
+        <header className="panel-header">
+          <div>
+            <p className="eyebrow">VOICE WORKFLOW</p>
+            <h1>OpenSpeak</h1>
+            <p className="subhead">Local-first desktop dictation powered by whisper.cpp</p>
+          </div>
+          <span className={`state-pill state-${status.recordingState}`}>{status.recordingState}</span>
+        </header>
 
         <div className="status-grid">
-          <span>State</span>
-          <strong>{status.recordingState}</strong>
-          <span>Recording Time</span>
-          <strong>{recordingNow ? elapsedLabel : '--:--'}</strong>
-          <span>Permissions</span>
-          <strong>{permissionSummary}</strong>
-          <span>Model</span>
-          <strong>{config?.modelDefault ?? 'unknown'}</strong>
-          <span>Hotkey</span>
-          <strong>{config?.hotkey ?? 'unknown'}</strong>
+          <article className="status-item">
+            <span>Recording Time</span>
+            <strong>{recordingNow ? elapsedLabel : '--:--'}</strong>
+          </article>
+          <article className="status-item">
+            <span>Permissions</span>
+            <strong>{permissionSummary}</strong>
+          </article>
+          <article className="status-item">
+            <span>Model</span>
+            <strong>{config?.modelDefault ?? 'unknown'}</strong>
+          </article>
+          <article className="status-item">
+            <span>Hotkey</span>
+            <strong>{config?.hotkey ?? 'unknown'}</strong>
+          </article>
         </div>
 
-        <div className="actions">
-          <button onClick={onToggle} disabled={busy}>
+        <div className="actions action-row">
+          <button className="btn btn-primary" onClick={onToggle} disabled={busy}>
             {recordingNow ? 'Stop Dictation' : 'Start Dictation'}
           </button>
-          <button onClick={onDownload} disabled={busy || !config}>
+          <button className="btn btn-secondary" onClick={onDownload} disabled={busy || !config}>
             Download Current Model
           </button>
         </div>
 
-        <label htmlFor="model">Model</label>
-        <select
-          id="model"
-          value={config?.modelDefault ?? 'tiny'}
-          onChange={(e) => {
-            const model = e.target.value as (typeof MODEL_OPTIONS)[number];
-            void onChangeModel(model);
-          }}
-          disabled={busy}
-        >
-          {MODEL_OPTIONS.map((m) => (
-            <option key={m} value={m}>
-              {m}
-            </option>
-          ))}
-        </select>
+        <div className="settings-grid">
+          <div className="field-group">
+            <label htmlFor="model">Model</label>
+            <select
+              id="model"
+              value={config?.modelDefault ?? 'small'}
+              onChange={(e) => {
+                const model = e.target.value as AppConfig['modelDefault'];
+                void onChangeModel(model);
+              }}
+              disabled={busy}
+            >
+              {MODEL_OPTIONS.map((model) => (
+                <option key={model.id} value={model.id}>
+                  {model.label} - {model.detail}
+                </option>
+              ))}
+            </select>
+          </div>
 
-        <label htmlFor="pasteMode">Output Mode</label>
-        <select
-          id="pasteMode"
-          value={config?.pasteMode ?? 'clipboard'}
-          onChange={(e) => {
-            const mode = e.target.value as (typeof PASTE_OPTIONS)[number];
-            void onChangePasteMode(mode);
-          }}
-          disabled={busy}
-        >
-          <option value="clipboard">Clipboard only</option>
-          <option value="auto-paste">Auto-paste after stop</option>
-        </select>
+          <div className="field-group">
+            <label htmlFor="pasteMode">Output Mode</label>
+            <select
+              id="pasteMode"
+              value={config?.pasteMode ?? 'clipboard'}
+              onChange={(e) => {
+                const mode = e.target.value as (typeof PASTE_OPTIONS)[number];
+                void onChangePasteMode(mode);
+              }}
+              disabled={busy}
+            >
+              <option value="clipboard">Clipboard only</option>
+              <option value="auto-paste">Auto-paste after stop</option>
+            </select>
+          </div>
+        </div>
 
-        <label htmlFor="hotkey">Global Hotkey</label>
-        <div className="actions">
-          <input
-            id="hotkey"
-            value={hotkeyDraft}
-            onChange={(e) => setHotkeyDraft(e.target.value)}
-            placeholder="CommandOrControl+Shift+Space"
-            disabled={busy}
-          />
-          <button onClick={() => void onSaveHotkey()} disabled={busy || !hotkeyDraft.trim()}>
-            Save Hotkey
-          </button>
+        <div className="field-group">
+          <label htmlFor="hotkey">Global Hotkey</label>
+          <div className="actions">
+            <input
+              id="hotkey"
+              value={hotkeyDraft}
+              onChange={(e) => setHotkeyDraft(e.target.value)}
+              placeholder="CommandOrControl+Shift+Space"
+              disabled={busy}
+            />
+            <button
+              className="btn btn-secondary"
+              onClick={() => void onSaveHotkey()}
+              disabled={busy || !hotkeyDraft.trim()}
+            >
+              Save Hotkey
+            </button>
+          </div>
         </div>
 
         {result ? (
