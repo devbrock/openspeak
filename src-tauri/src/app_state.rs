@@ -19,13 +19,17 @@ pub struct AppStateInner {
 impl AppState {
     pub fn new() -> Self {
         let config = load_or_init_config().unwrap_or_else(|_| default_config());
+        #[cfg(target_os = "macos")]
+        let accessibility_granted = crate::platform::macos::accessibility_granted();
+        #[cfg(not(target_os = "macos"))]
+        let accessibility_granted = false;
         Self {
             inner: Mutex::new(AppStateInner {
                 status: AppStatus {
                     recording_state: RecordingState::Idle,
                     model_ready: false,
                     microphone_granted: cfg!(target_os = "macos"),
-                    accessibility_granted: cfg!(target_os = "macos"),
+                    accessibility_granted,
                     last_error: None,
                 },
                 config,

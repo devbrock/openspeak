@@ -160,6 +160,8 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             commands::get_status,
             commands::get_config,
+            commands::reset_permissions,
+            commands::enable_permissions,
             commands::start_recording,
             commands::stop_recording,
             commands::toggle_recording,

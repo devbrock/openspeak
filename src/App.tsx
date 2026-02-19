@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   downloadModel,
+  enablePermissions,
   getConfig,
   getStatus,
+  resetPermissions,
   setHotkey,
   setModel,
   setPasteMode,
@@ -161,6 +163,32 @@ export function App() {
     [refresh]
   );
 
+  const onEnablePermissions = useCallback(async () => {
+    setError(null);
+    setBusy(true);
+    try {
+      await enablePermissions();
+      await refresh();
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setBusy(false);
+    }
+  }, [refresh]);
+
+  const onResetPermissions = useCallback(async () => {
+    setError(null);
+    setBusy(true);
+    try {
+      await resetPermissions();
+      await refresh();
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setBusy(false);
+    }
+  }, [refresh]);
+
   const statusError = error ?? status.lastError;
   const elapsedLabel = `${Math.floor(elapsedSec / 60)
     .toString()
@@ -206,6 +234,15 @@ export function App() {
           </button>
           <button className="btn btn-secondary" onClick={onDownload} disabled={busy || !config}>
             Download Current Model
+          </button>
+        </div>
+
+        <div className="actions action-row">
+          <button className="btn btn-secondary" onClick={() => void onEnablePermissions()} disabled={busy}>
+            Enable Permissions
+          </button>
+          <button className="btn btn-secondary" onClick={() => void onResetPermissions()} disabled={busy}>
+            Reset Permissions
           </button>
         </div>
 

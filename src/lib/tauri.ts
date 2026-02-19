@@ -25,6 +25,14 @@ export async function getConfig(): Promise<AppConfig> {
   return invoke<AppConfig>('get_config');
 }
 
+export async function resetPermissions(): Promise<void> {
+  return invoke('reset_permissions');
+}
+
+export async function enablePermissions(): Promise<void> {
+  return invoke('enable_permissions');
+}
+
 export async function setModel(
   modelId: 'tiny' | 'base' | 'small' | 'medium' | 'large-v3' | 'turbo'
 ): Promise<void> {

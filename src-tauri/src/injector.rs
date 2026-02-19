@@ -22,6 +22,12 @@ pub fn deliver_text(text: &str, paste_mode: &str) -> Result<String> {
     if paste_mode == "auto-paste" {
         #[cfg(target_os = "macos")]
         {
+            if !macos::accessibility_granted() {
+                eprintln!(
+                    "auto-paste skipped: Accessibility permission is not granted for this app"
+                );
+                return Ok("clipboard".to_string());
+            }
             match macos::trigger_cmd_v_paste() {
                 Ok(()) => return Ok("auto-paste".to_string()),
                 Err(err) => {

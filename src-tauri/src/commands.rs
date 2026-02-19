@@ -24,6 +24,10 @@ fn set_last_error(state: &AppState, message: Option<String>) {
 #[tauri::command]
 pub fn get_status(state: State<'_, AppState>) -> Result<AppStatus, String> {
     let status = state.with_lock(|s| {
+        #[cfg(target_os = "macos")]
+        {
+            s.status.accessibility_granted = crate::platform::macos::accessibility_granted();
+        }
         let mut out = s.status.clone();
         out.model_ready = is_model_installed(&s.config.model_default);
         out
@@ -63,6 +67,58 @@ pub fn set_hotkey(
         set_last_error(&state, None);
     }
     result
+}
+
+#[tauri::command]
+pub fn reset_permissions(app: AppHandle, state: State<'_, AppState>) -> Result<(), String> {
+    #[cfg(target_os = "macos")]
+    {
+        let bundle_id = app.config().identifier.as_str();
+        crate::platform::macos::reset_permissions(bundle_id).map_err(|e| e.to_string())?;
+        state.with_lock(|s| {
+            s.status.accessibility_granted = crate::platform::macos::accessibility_granted();
+            s.status.last_error = None;
+        });
+    }
+    Ok(())
+}
+
+#[tauri::command]
+pub fn enable_permissions(state: State<'_, AppState>) -> Result<(), String> {
+    #[cfg(target_os = "macos")]
+    {
+        crate::platform::macos::open_permissions_settings().map_err(|e| e.to_string())?;
+        let trusted_after_prompt =
+            crate::platform::macos::prompt_accessibility_permission().map_err(|e| e.to_string())?;
+
+        // Best-effort microphone prompt: initializing input capture causes macOS to ask
+        // for Microphone permission if this app has not been granted yet.
+        let mic_init_result = RecordingSession::begin();
+        if let Err(err) = mic_init_result {
+            state.with_lock(|s| {
+                s.status.last_error = Some(format!(
+                    "Microphone check failed while requesting permissions: {err}"
+                ));
+            });
+        } else {
+            state.with_lock(|s| {
+                s.status.last_error = None;
+                s.status.microphone_granted = true;
+            });
+        }
+
+        state.with_lock(|s| {
+            s.status.accessibility_granted = crate::platform::macos::accessibility_granted();
+        });
+
+        if !trusted_after_prompt && !crate::platform::macos::accessibility_granted() {
+            return Err(
+                "Accessibility permission is still not granted. In System Settings > Privacy & Security > Accessibility, enable OpenSpeak, then fully quit and relaunch the app."
+                    .to_string(),
+            );
+        }
+    }
+    Ok(())
 }
 
 #[tauri::command]
