@@ -67,12 +67,18 @@ h1 {
 }
 
 button,
-select {
+select,
+input {
   border: 1px solid #b4c5d8;
   border-radius: 10px;
   padding: 0.58rem 0.85rem;
   background: #fff;
   font: inherit;
+}
+
+input {
+  min-width: 14rem;
+  width: 100%;
 }
 
 button {
@@ -122,6 +128,10 @@ label {
 .error {
   color: #a62f2f;
   margin-top: 0.8rem;
+  border: 1px solid #efc7c7;
+  background: #fff0f0;
+  border-radius: 10px;
+  padding: 0.5rem 0.65rem;
 }
 
 @media (max-width: 640px) {

@@ -13,6 +13,10 @@ export async function stopRecording(sessionId: string): Promise<TranscriptionRes
   return invoke<TranscriptionResult>('stop_recording', { sessionId });
 }
 
+export async function toggleRecording(): Promise<TranscriptionResult | null> {
+  return invoke<TranscriptionResult | null>('toggle_recording');
+}
+
 export async function setHotkey(hotkeySpec: string): Promise<void> {
   return invoke('set_hotkey', { hotkeySpec });
 }
@@ -23,6 +27,10 @@ export async function getConfig(): Promise<AppConfig> {
 
 export async function setModel(modelId: 'tiny' | 'base' | 'large'): Promise<void> {
   return invoke('set_model', { modelId });
+}
+
+export async function setPasteMode(pasteMode: 'clipboard' | 'auto-paste'): Promise<void> {
+  return invoke('set_paste_mode', { pasteMode });
 }
 
 export async function downloadModel(modelId: 'tiny' | 'base' | 'large'): Promise<string> {

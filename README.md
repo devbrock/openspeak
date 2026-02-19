@@ -9,8 +9,11 @@ This repository now includes:
 - Tauri/React app shell and settings UI.
 - Rust command surface (`start_recording`, `stop_recording`, `set_hotkey`, `set_model`, `download_model`, `get_status`, `get_config`).
 - Core modules for config, parser, model manager, live microphone capture, whisper.cpp transcription, and output injection.
-- macOS-focused output strategy: clipboard paste with clipboard restore.
+- macOS-focused output strategies:
+  - `clipboard` (copy result for manual paste)
+  - `auto-paste` (copy + trigger `Cmd+V` into active app)
 - Basic deterministic voice-command parser, including punctuation and multi-word commands (`new line`, `new paragraph`, `question mark`).
+- Global hotkey support configurable from the UI (default: `CommandOrControl+Shift+Space`).
 
 ## Local setup
 
@@ -40,7 +43,9 @@ cargo tauri dev
 On first transcription, the app downloads the selected whisper.cpp model to:
 `~/Library/Application Support/brocks-dictation-tool/models/`
 
-When transcription completes, text is copied to clipboard. Paste into the target app with `Cmd+V`.
+When transcription completes:
+- `clipboard` mode: paste manually with `Cmd+V`
+- `auto-paste` mode: app triggers paste automatically after stop
 
 ## Next implementation steps
 
