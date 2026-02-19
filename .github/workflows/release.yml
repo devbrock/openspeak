@@ -31,12 +31,6 @@ jobs:
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
-          APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
-          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
-          APPLE_ID: ${{ secrets.APPLE_ID }}
-          APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
-          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
         with:
           tagName: ${{ github.ref_name }}
           releaseName: OpenSpeak ${{ github.ref_name }}
@@ -44,5 +38,6 @@ jobs:
             OpenSpeak release ${{ github.ref_name }}.
 
             Download the `.dmg` asset and move OpenSpeak into `/Applications`.
+            This build is unsigned and not notarized.
           releaseDraft: false
           prerelease: ${{ contains(github.ref_name, '-') }}
