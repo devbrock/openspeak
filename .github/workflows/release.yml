@@ -37,7 +37,8 @@ jobs:
           releaseBody: |
             OpenSpeak release ${{ github.ref_name }}.
 
-            Download the `.dmg` asset and move OpenSpeak into `/Applications`.
+            Download the macOS `.app.tar.gz` asset from this release.
+            Unzip it and move `OpenSpeak.app` into `/Applications`.
             This build is unsigned and not notarized.
           releaseDraft: false
           prerelease: ${{ contains(github.ref_name, '-') }}
