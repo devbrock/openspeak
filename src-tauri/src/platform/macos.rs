@@ -1,26 +1,20 @@
 use anyhow::{anyhow, bail, Context, Result};
+use core_foundation::{
+    base::TCFType,
+    boolean::CFBoolean,
+    dictionary::CFMutableDictionary,
+    string::CFString,
+};
 use core_graphics::{
     event::{CGEvent, CGEventFlags, CGEventTapLocation},
     event_source::{CGEventSource, CGEventSourceStateID},
 };
-use std::ffi::c_void;
 use std::process::{Command, Stdio};
 
 #[link(name = "ApplicationServices", kind = "framework")]
 unsafe extern "C" {
     fn AXIsProcessTrusted() -> bool;
-    fn AXIsProcessTrustedWithOptions(options: *const c_void) -> bool;
-    static kAXTrustedCheckOptionPrompt: *const c_void;
-
-    fn CFDictionaryCreateMutable(
-        allocator: *const c_void,
-        capacity: isize,
-        key_callbacks: *const c_void,
-        value_callbacks: *const c_void,
-    ) -> *mut c_void;
-    fn CFDictionarySetValue(dict: *mut c_void, key: *const c_void, value: *const c_void);
-    fn CFRelease(cf: *const c_void);
-    static kCFBooleanTrue: *const c_void;
+    fn AXIsProcessTrustedWithOptions(options: core_foundation::dictionary::CFDictionaryRef) -> bool;
 }
 
 pub fn accessibility_granted() -> bool {
@@ -29,14 +23,16 @@ pub fn accessibility_granted() -> bool {
 }
 
 pub fn reset_permissions(bundle_id: &str) -> Result<()> {
-    let status = Command::new("tccutil")
-        .arg("reset")
-        .arg("All")
-        .arg(bundle_id)
-        .status()
-        .context("failed to execute tccutil reset")?;
-    if !status.success() {
-        bail!("tccutil reset failed");
+    for service in ["Accessibility", "Microphone"] {
+        let status = Command::new("tccutil")
+            .arg("reset")
+            .arg(service)
+            .arg(bundle_id)
+            .status()
+            .with_context(|| format!("failed to execute tccutil reset for {service}"))?;
+        if !status.success() {
+            bail!("tccutil reset failed for {service}");
+        }
     }
     Ok(())
 }
@@ -60,19 +56,11 @@ pub fn open_permissions_settings() -> Result<()> {
 
 pub fn prompt_accessibility_permission() -> Result<bool> {
     // Ask macOS to show the Accessibility trust prompt for this exact app identity.
-    let options = unsafe {
-        CFDictionaryCreateMutable(std::ptr::null(), 1, std::ptr::null(), std::ptr::null())
-    };
-    if options.is_null() {
-        bail!("failed to build Accessibility prompt options");
-    }
-    unsafe {
-        CFDictionarySetValue(options, kAXTrustedCheckOptionPrompt, kCFBooleanTrue);
-    }
-    let trusted = unsafe { AXIsProcessTrustedWithOptions(options.cast_const()) };
-    unsafe {
-        CFRelease(options.cast_const());
-    }
+    let key = CFString::new("AXTrustedCheckOptionPrompt");
+    let value = CFBoolean::true_value();
+    let mut options = CFMutableDictionary::new();
+    options.set(key.as_CFType(), value.as_CFType());
+    let trusted = unsafe { AXIsProcessTrustedWithOptions(options.as_concrete_TypeRef()) };
     Ok(trusted)
 }
 

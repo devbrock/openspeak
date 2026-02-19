@@ -21,6 +21,31 @@ fn set_last_error(state: &AppState, message: Option<String>) {
     });
 }
 
+fn ensure_auto_paste_accessibility(state: &AppState) -> Result<(), String> {
+    #[cfg(target_os = "macos")]
+    {
+        let paste_mode = state.with_lock(|s| s.config.paste_mode.clone());
+        if paste_mode == "auto-paste" {
+            let already_granted = crate::platform::macos::accessibility_granted();
+            if !already_granted {
+                let _ = crate::platform::macos::prompt_accessibility_permission()
+                    .map_err(|e| e.to_string())?;
+            }
+            let granted_now = crate::platform::macos::accessibility_granted();
+            state.with_lock(|s| {
+                s.status.accessibility_granted = granted_now;
+            });
+            if !granted_now {
+                return Err(
+                    "Accessibility permission is required for auto-paste. Enable OpenSpeak in System Settings > Privacy & Security > Accessibility, then retry."
+                        .to_string(),
+                );
+            }
+        }
+    }
+    Ok(())
+}
+
 #[tauri::command]
 pub fn get_status(state: State<'_, AppState>) -> Result<AppStatus, String> {
     let status = state.with_lock(|s| {
@@ -76,8 +101,12 @@ pub fn reset_permissions(app: AppHandle, state: State<'_, AppState>) -> Result<(
         let bundle_id = app.config().identifier.as_str();
         crate::platform::macos::reset_permissions(bundle_id).map_err(|e| e.to_string())?;
         state.with_lock(|s| {
-            s.status.accessibility_granted = crate::platform::macos::accessibility_granted();
-            s.status.last_error = None;
+            s.status.accessibility_granted = false;
+            s.status.microphone_granted = false;
+            s.status.last_error = Some(
+                "Permissions were reset. Fully quit and relaunch OpenSpeak, then click Enable Permissions."
+                    .to_string(),
+            );
         });
     }
     Ok(())
@@ -87,9 +116,11 @@ pub fn reset_permissions(app: AppHandle, state: State<'_, AppState>) -> Result<(
 pub fn enable_permissions(state: State<'_, AppState>) -> Result<(), String> {
     #[cfg(target_os = "macos")]
     {
-        crate::platform::macos::open_permissions_settings().map_err(|e| e.to_string())?;
         let trusted_after_prompt =
             crate::platform::macos::prompt_accessibility_permission().map_err(|e| e.to_string())?;
+        if !trusted_after_prompt {
+            crate::platform::macos::open_permissions_settings().map_err(|e| e.to_string())?;
+        }
 
         // Best-effort microphone prompt: initializing input capture causes macOS to ask
         // for Microphone permission if this app has not been granted yet.
@@ -157,6 +188,8 @@ pub async fn download_model(model_id: String) -> Result<String, String> {
 }
 
 pub fn start_recording_internal(app: &AppHandle, state: &AppState) -> Result<String, String> {
+    ensure_auto_paste_accessibility(state)?;
+
     let result = state.with_lock(|s| {
         if s.active_session.is_some() {
             return Err("recording session already active".to_string());
