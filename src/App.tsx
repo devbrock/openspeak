@@ -162,8 +162,8 @@ export function App() {
   return (
     <main className="app-shell">
       <section className="card">
-        <h1>Brock's Dictation Tool</h1>
-        <p className="subhead">macOS-first local dictation using whisper.cpp</p>
+        <h1>OpenSpeak</h1>
+        <p className="subhead">Local-first desktop dictation powered by whisper.cpp</p>
 
         <div className="status-grid">
           <span>State</span>

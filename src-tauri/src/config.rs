@@ -5,6 +5,8 @@ use anyhow::{Context, Result};
 use crate::types::{AppConfig, PrivacyConfig};
 
 const CONFIG_VERSION: u32 = 1;
+const APP_DATA_DIR: &str = "openspeak";
+const LEGACY_APP_DATA_DIR: &str = "brocks-dictation-tool";
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -30,9 +32,19 @@ pub fn default_config() -> AppConfig {
 
 fn config_path() -> Result<PathBuf> {
     let mut dir = dirs::data_local_dir().context("failed to locate local data directory")?;
-    dir.push("brocks-dictation-tool");
+
+    let mut legacy = dir.clone();
+    legacy.push(LEGACY_APP_DATA_DIR);
+    legacy.push("config.json");
+
+    dir.push(APP_DATA_DIR);
     fs::create_dir_all(&dir).context("failed to create app data directory")?;
     dir.push("config.json");
+
+    if !dir.exists() && legacy.exists() {
+        return Ok(legacy);
+    }
+
     Ok(dir)
 }
 

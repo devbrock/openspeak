@@ -1,12 +1,12 @@
 [package]
-name = "brocks-dictation-tool"
+name = "openspeak"
 version = "0.1.0"
 description = "Local-first cross-platform dictation tool"
 authors = ["tbalducci"]
 edition = "2021"
 
 [lib]
-name = "brocks_dictation_tool_lib"
+name = "openspeak_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [dependencies]

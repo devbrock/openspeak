@@ -63,7 +63,7 @@ fn setup_tray(app: &tauri::App) -> Result<(), String> {
         let mut tray = TrayIconBuilder::with_id("main-tray")
             .menu(&menu)
             .show_menu_on_left_click(true)
-            .tooltip("Brock's Dictation Tool")
+            .tooltip("OpenSpeak")
             .icon_as_template(false)
             .on_menu_event(|app, event| match event.id().as_ref() {
                 TRAY_TOGGLE_ID => {

@@ -3,11 +3,23 @@ use std::{fs, path::PathBuf};
 use anyhow::{Context, Result};
 use tokio::io::AsyncWriteExt;
 
+const APP_DATA_DIR: &str = "openspeak";
+const LEGACY_APP_DATA_DIR: &str = "brocks-dictation-tool";
+
 fn model_root() -> Result<PathBuf> {
     let mut dir = dirs::data_local_dir().context("failed to locate local data directory")?;
-    dir.push("brocks-dictation-tool");
+    let mut legacy = dir.clone();
+    legacy.push(LEGACY_APP_DATA_DIR);
+    legacy.push("models");
+
+    dir.push(APP_DATA_DIR);
     dir.push("models");
     fs::create_dir_all(&dir).context("failed to create model directory")?;
+
+    if !dir.read_dir().map(|mut it| it.next().is_some()).unwrap_or(false) && legacy.exists() {
+        return Ok(legacy);
+    }
+
     Ok(dir)
 }
 

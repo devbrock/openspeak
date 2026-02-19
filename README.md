@@ -1,55 +1,102 @@
-# Brock's Dictation Tool
+# OpenSpeak
 
-Cross-platform dictation app scaffold, implemented as a macOS-first Tauri + Rust desktop product with local-only transcription architecture.
+OpenSpeak is a local-first desktop dictation app built with Tauri, Rust, and whisper.cpp.
 
-## Current status
+It is designed for fast global dictation workflows:
+- Trigger recording from a global hotkey
+- Speak naturally
+- Stop and insert text where you are working
 
-This repository now includes:
+## Features
 
-- Tauri/React app shell and settings UI.
-- Rust command surface (`start_recording`, `stop_recording`, `set_hotkey`, `set_model`, `download_model`, `get_status`, `get_config`).
-- Core modules for config, parser, model manager, live microphone capture, whisper.cpp transcription, and output injection.
-- macOS-focused output strategies:
-  - `clipboard` (copy result for manual paste)
-  - `auto-paste` (copy + trigger `Cmd+V` into active app)
-- Basic deterministic voice-command parser, including punctuation and multi-word commands (`new line`, `new paragraph`, `question mark`).
-- Global hotkey support configurable from the UI (default: `CommandOrControl+Shift+Space`).
+- Local transcription via `whisper.cpp` (`whisper-rs`)
+- Global hotkey toggle for start/stop dictation
+- Menu bar (tray-first) app flow on macOS
+- Recording overlay HUD for background visual feedback
+- Two output modes:
+  - `clipboard`: copy text for manual paste
+  - `auto-paste`: copy then trigger paste automatically
+- Basic spoken formatting commands:
+  - `comma`, `period`, `question mark`
+  - `new line`, `new paragraph`
+- Model download and local model management (`tiny`, `base`, `large`)
 
-## Local setup
+## Architecture
 
-### 1) Install prerequisites
+- Frontend: React + Vite
+- Desktop shell: Tauri v2
+- Core runtime: Rust
+- Audio capture: `cpal`
+- Inference: `whisper-rs` / `whisper.cpp`
 
+## Requirements
+
+- macOS (current focus)
 - Node.js 20+
-- Rust toolchain (`rustup`, `rustc`, `cargo`)
-- Tauri system dependencies for macOS
-- `cmake` (required by whisper.cpp Rust bindings)
+- Rust toolchain (`rustup`, `cargo`)
+- Xcode Command Line Tools
+- `cmake` (required by whisper build)
+
+Install `cmake`:
 
 ```bash
 brew install cmake
 ```
 
-### 2) Install frontend deps
+## Getting Started
+
+Install dependencies:
 
 ```bash
 npm install
 ```
 
-### 3) Run desktop app
+Run in development:
 
 ```bash
 cargo tauri dev
 ```
 
-On first transcription, the app downloads the selected whisper.cpp model to:
-`~/Library/Application Support/brocks-dictation-tool/models/`
+Production build:
 
-When transcription completes:
-- `clipboard` mode: paste manually with `Cmd+V`
-- `auto-paste` mode: app triggers paste automatically after stop
+```bash
+cargo tauri build
+```
 
-## Next implementation steps
+## Permissions (macOS)
 
-1. Add global hotkey registration in `platform/macos.rs`.
-2. Add model checksum verification and resumable download.
-3. Add confidence/latency telemetry panel in the desktop UI.
-4. Add integration tests across TextEdit, Terminal/iTerm, and browser text fields.
+For full functionality, OpenSpeak needs:
+- Microphone access (record speech)
+- Accessibility access (auto-paste automation)
+
+If `auto-paste` is disabled, Accessibility permission is optional.
+
+## Model Storage
+
+By default, model files are stored under:
+
+`~/Library/Application Support/openspeak/models/`
+
+OpenSpeak also supports legacy paths from earlier project naming and will continue to read existing local data if present.
+
+## Configuration
+
+OpenSpeak persists settings in local app data, including:
+- Global hotkey
+- Default model
+- Paste mode
+- Privacy flags
+
+Default hotkey:
+
+`CommandOrControl+Shift+Space`
+
+## Development Notes
+
+- The app runs tray-first by default; open settings from the tray menu.
+- Closing the settings window hides it instead of quitting.
+- The overlay is a separate transparent always-on-top window.
+
+## License
+
+Add your preferred license in `LICENSE`.
