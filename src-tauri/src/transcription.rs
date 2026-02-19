@@ -9,6 +9,17 @@ pub struct WhisperOutput {
     pub confidence: f32,
 }
 
+fn clean_whisper_text(input: &str) -> String {
+    let mut out = Vec::new();
+    for token in input.split_whitespace() {
+        if token.eq_ignore_ascii_case("[BLANK_AUDIO]") {
+            continue;
+        }
+        out.push(token);
+    }
+    out.join(" ").trim().to_string()
+}
+
 fn run_inference(pcm: &[f32], model_path: &str) -> Result<WhisperOutput> {
     let ctx = WhisperContext::new_with_params(model_path, WhisperContextParameters::default())
         .context("failed to initialize whisper context")?;
@@ -42,7 +53,7 @@ fn run_inference(pcm: &[f32], model_path: &str) -> Result<WhisperOutput> {
     }
 
     Ok(WhisperOutput {
-        text: text.trim().to_string(),
+        text: clean_whisper_text(&text),
         confidence: 0.9,
     })
 }
