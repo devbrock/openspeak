@@ -1,0 +1,11 @@
+node_modules/
+dist/
+
+# Rust / Tauri build artifacts
+src-tauri/target/
+
+# TypeScript incremental cache
+*.tsbuildinfo
+
+# macOS
+.DS_Store

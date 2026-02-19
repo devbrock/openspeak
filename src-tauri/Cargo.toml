@@ -1,0 +1,30 @@
+[package]
+name = "brocks-dictation-tool"
+version = "0.1.0"
+description = "Local-first cross-platform dictation tool"
+authors = ["tbalducci"]
+edition = "2021"
+
+[lib]
+name = "brocks_dictation_tool_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[dependencies]
+anyhow = "1"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+thiserror = "1"
+tauri = { version = "2", features = [] }
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "time", "fs", "io-util"] }
+uuid = { version = "1", features = ["v4", "serde"] }
+parking_lot = "0.12"
+dirs = "5"
+cpal = "0.15"
+whisper-rs = "0.11"
+reqwest = { version = "0.12", default-features = false, features = ["blocking", "rustls-tls"] }
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[patch.crates-io]
+whisper-rs-sys = { path = "../vendor/whisper-rs-sys" }
