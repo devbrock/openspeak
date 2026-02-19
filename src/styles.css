@@ -14,6 +14,12 @@ body {
   min-height: 100vh;
 }
 
+html.overlay-window,
+body.overlay-window,
+body.overlay-window #root {
+  background: transparent !important;
+}
+
 .app-shell {
   min-height: 100vh;
   display: grid;
@@ -138,4 +144,95 @@ label {
   .actions {
     flex-direction: column;
   }
+}
+
+.overlay-shell {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 0 8px 4px;
+  background: transparent;
+}
+
+.overlay-card {
+  width: min(420px, calc(100vw - 16px));
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: linear-gradient(180deg, rgba(10, 13, 18, 0.9), rgba(8, 10, 14, 0.84));
+  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.36);
+  color: #f3f7ff;
+  padding: 10px 14px;
+  max-height: 100%;
+  overflow: hidden;
+}
+
+.overlay-topline {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.93rem;
+  margin-bottom: 8px;
+}
+
+.overlay-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 999px;
+  box-shadow: 0 0 10px currentColor;
+}
+
+.overlay-dot.mode-recording {
+  color: #2ee6a2;
+  background: #2ee6a2;
+}
+
+.overlay-dot.mode-transcribing {
+  color: #ffd66e;
+  background: #ffd66e;
+}
+
+.overlay-dot.mode-idle {
+  color: #9aa7bc;
+  background: #9aa7bc;
+}
+
+.wave {
+  height: 32px;
+  display: grid;
+  grid-template-columns: repeat(22, 1fr);
+  align-items: end;
+  gap: 4px;
+}
+
+.wave-bar {
+  height: 8px;
+  border-radius: 4px;
+  background: linear-gradient(180deg, #9ad9ff, #66ffcb);
+  animation: wave-bounce 1000ms ease-in-out infinite;
+}
+
+@keyframes wave-bounce {
+  0% {
+    height: 8px;
+    opacity: 0.4;
+  }
+  30% {
+    height: 22px;
+    opacity: 1;
+  }
+  60% {
+    height: 12px;
+    opacity: 0.7;
+  }
+  100% {
+    height: 8px;
+    opacity: 0.4;
+  }
+}
+
+.overlay-processing {
+  font-size: 0.9rem;
+  color: #e8d290;
 }

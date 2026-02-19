@@ -10,6 +10,7 @@ use crate::{
     config::save_config,
     injector::deliver_text,
     model::{download_model as download_model_file, is_model_installed},
+    overlay::set_overlay_visible,
     transcription::transcribe_locally,
     types::{AppConfig, AppStatus, RecordingState, TranscriptionResult},
 };
@@ -99,8 +100,8 @@ pub async fn download_model(model_id: String) -> Result<String, String> {
         .map_err(|e| e.to_string())
 }
 
-pub fn start_recording_internal(state: &AppState) -> Result<String, String> {
-    state.with_lock(|s| {
+pub fn start_recording_internal(app: &AppHandle, state: &AppState) -> Result<String, String> {
+    let result = state.with_lock(|s| {
         if s.active_session.is_some() {
             return Err("recording session already active".to_string());
         }
@@ -109,10 +110,15 @@ pub fn start_recording_internal(state: &AppState) -> Result<String, String> {
         s.active_session = Some(session);
         s.status.recording_state = RecordingState::Recording;
         Ok(id)
-    })
+    });
+    if result.is_ok() {
+        set_overlay_visible(app, true);
+    }
+    result
 }
 
 pub async fn stop_recording_internal(
+    app: &AppHandle,
     state: &AppState,
     session_id: String,
 ) -> Result<TranscriptionResult, String> {
@@ -128,6 +134,7 @@ pub async fn stop_recording_internal(
         state.with_lock(|s| {
             s.status.recording_state = RecordingState::Idle;
         });
+        set_overlay_visible(app, false);
         return Err("session id mismatch".to_string());
     }
 
@@ -159,11 +166,13 @@ pub async fn stop_recording_internal(
         s.status.recording_state = RecordingState::Idle;
         s.status.last_error = result.as_ref().err().cloned();
     });
+    set_overlay_visible(app, false);
 
     result
 }
 
 pub async fn toggle_recording_internal(
+    app: &AppHandle,
     state: &AppState,
 ) -> Result<Option<TranscriptionResult>, String> {
     let maybe_session_id = state.with_lock(|s| {
@@ -172,17 +181,17 @@ pub async fn toggle_recording_internal(
             .map(|session| session.id.to_string())
     });
     if let Some(id) = maybe_session_id {
-        let result = stop_recording_internal(state, id).await?;
+        let result = stop_recording_internal(app, state, id).await?;
         return Ok(Some(result));
     }
 
-    start_recording_internal(state)?;
+    start_recording_internal(app, state)?;
     Ok(None)
 }
 
 #[tauri::command]
-pub fn start_recording(state: State<'_, AppState>) -> Result<String, String> {
-    let result = start_recording_internal(&state);
+pub fn start_recording(app: AppHandle, state: State<'_, AppState>) -> Result<String, String> {
+    let result = start_recording_internal(&app, &state);
     if let Err(err) = &result {
         set_last_error(&state, Some(err.clone()));
     } else {
@@ -193,10 +202,11 @@ pub fn start_recording(state: State<'_, AppState>) -> Result<String, String> {
 
 #[tauri::command]
 pub async fn stop_recording(
+    app: AppHandle,
     state: State<'_, AppState>,
     session_id: String,
 ) -> Result<TranscriptionResult, String> {
-    let result = stop_recording_internal(&state, session_id).await;
+    let result = stop_recording_internal(&app, &state, session_id).await;
     if let Err(err) = &result {
         set_last_error(&state, Some(err.clone()));
     }
@@ -205,9 +215,10 @@ pub async fn stop_recording(
 
 #[tauri::command]
 pub async fn toggle_recording(
+    app: AppHandle,
     state: State<'_, AppState>,
 ) -> Result<Option<TranscriptionResult>, String> {
-    let result = toggle_recording_internal(&state).await;
+    let result = toggle_recording_internal(&app, &state).await;
     if let Err(err) = &result {
         set_last_error(&state, Some(err.clone()));
     } else {

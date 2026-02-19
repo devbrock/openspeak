@@ -5,6 +5,7 @@ mod commands;
 mod config;
 mod injector;
 mod model;
+mod overlay;
 mod platform;
 mod transcription;
 mod types;
@@ -18,6 +19,8 @@ pub fn run() {
     tauri::Builder::default()
         .manage(AppState::new())
         .setup(|app| {
+            overlay::setup_overlay_window(app)?;
+
             #[cfg(desktop)]
             {
                 let state = app.state::<AppState>();
@@ -32,7 +35,8 @@ pub fn run() {
                             let app_handle = app.clone();
                             tauri::async_runtime::spawn(async move {
                                 let state = app_handle.state::<AppState>();
-                                let result = commands::toggle_recording_internal(&state).await;
+                                let result =
+                                    commands::toggle_recording_internal(&app_handle, &state).await;
                                 if let Err(err) = result {
                                     state.with_lock(|s| {
                                         s.status.last_error = Some(err);
