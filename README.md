@@ -71,7 +71,22 @@ cargo tauri build
 
 Build outputs:
 - `.app`: `src-tauri/target/release/bundle/macos/`
-- `.dmg`: `src-tauri/target/release/bundle/dmg/`
+
+## Install (GitHub Releases, macOS)
+
+Current release artifacts are unsigned macOS app bundles (`.app.tar.gz`).
+
+1. Download the latest `OpenSpeak_*.app.tar.gz` from GitHub Releases.
+2. Extract it and move `OpenSpeak.app` to `/Applications`.
+3. Remove the quarantine flag once:
+
+```bash
+xattr -rd com.apple.quarantine /Applications/OpenSpeak.app
+```
+
+4. Launch OpenSpeak from Applications.
+
+If macOS still blocks launch, use Finder `Right-click -> Open` once and confirm.
 
 ## Permissions (macOS)
 
@@ -125,6 +140,14 @@ This repository includes a GitHub Actions release workflow:
    - `git push origin v0.1.1`
 4. Wait for the `Release` workflow to complete.
 5. Verify assets in the GitHub Releases tab.
+
+### Unsigned build note
+
+Because release builds are currently unsigned, users may need to run:
+
+```bash
+xattr -rd com.apple.quarantine /Applications/OpenSpeak.app
+```
 
 ### Optional: signing and notarization (recommended)
 
