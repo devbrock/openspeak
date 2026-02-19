@@ -13,10 +13,12 @@
     "macOSPrivateApi": true,
     "windows": [
       {
+        "label": "main",
         "title": "Brock's Dictation Tool",
         "width": 880,
         "height": 640,
-        "resizable": true
+        "resizable": true,
+        "visible": false
       }
     ],
     "security": {
